@@ -12,7 +12,7 @@ import org.openstreetmap.josm.plugins.vectorizer.selectors.ColorSelector;
 
 public class AreaBuilder {
 
-	public final AreaBuilderContext ctx;
+	public final VectorizeTask task;
 	public final ColorSelector colorSelector;
 
 	private final TileSource source;
@@ -21,8 +21,8 @@ public class AreaBuilder {
 
 	private final Map<Point, TileAreaBuilder> tiles = new HashMap<Point, TileAreaBuilder>();
 
-	public AreaBuilder( AreaBuilderContext ctx, ColorSelector colorSelector, TileSource source, TileCache cache, int zoom ) {
-		this.ctx = ctx;
+	public AreaBuilder( VectorizeTask ctx, ColorSelector colorSelector, TileSource source, TileCache cache, int zoom ) {
+		this.task = ctx;
 		this.colorSelector = colorSelector;
 		this.source = source;
 		this.cache = cache;

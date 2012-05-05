@@ -26,7 +26,7 @@ public class TileAreaBuilder {
 		this.builder = builder;
 		this.tile = tile;
 		this.colorSelector = builder.colorSelector;
-		this.img = builder.ctx.createImageAccess( tile.getImage() );
+		this.img = builder.task.createImageAccess( tile.getImage() );
 
 		this.matrix = new boolean[img.getWidth() * img.getHeight()];
 

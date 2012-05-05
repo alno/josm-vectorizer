@@ -9,14 +9,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 import javax.swing.SwingUtilities;
 
+import org.openstreetmap.gui.jmapviewer.Tile;
+import org.openstreetmap.gui.jmapviewer.interfaces.TileCache;
+import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.SequenceCommand;
+import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.PleaseWaitRunnable;
@@ -30,20 +33,6 @@ import org.openstreetmap.josm.plugins.vectorizer.selectors.EllipsoidSelector;
 
 public class VectorizeTask extends PleaseWaitRunnable {
 
-	private static final AreaBuilderContext areaBuilderContext = new AreaBuilderContext() {
-
-		@Override
-		public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
-			return EllipsoidSelector.average( img, sx, sy, 2, 0 ).expand( 10 );
-		}
-
-		@Override
-		public ImageAccess createImageAccess( BufferedImage img ) {
-			return new MedianImageAccess( new DirectImageAccess( img ), 1 );
-		}
-
-	};
-
 	private final ImageryLayer layer; // Source layer for vectorization
 	private final Point p; // Starting point of vectorization
 
@@ -53,6 +42,14 @@ public class VectorizeTask extends PleaseWaitRunnable {
 		super( title );
 		this.layer = layer;
 		this.p = p;
+	}
+
+	public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
+		return EllipsoidSelector.average( img, sx, sy, 2, 0 ).expand( 10 );
+	}
+
+	public ImageAccess createImageAccess( BufferedImage img ) {
+		return new MedianImageAccess( new DirectImageAccess( img ), 1 );
 	}
 
 	@Override
@@ -142,9 +139,34 @@ public class VectorizeTask extends PleaseWaitRunnable {
 
 	private List<Way> vectorizeTMS( TMSLayer layer, Point pos ) {
 		progressMonitor.subTask( tr( "Determining area" ) );
-		Area area = areaBuilderContext.select( layer, Main.map.mapView.getLatLon( pos.x - layer.getDx(), pos.y - layer.getDy() ) );
+		Area area = select( layer, Main.map.mapView.getLatLon( pos.x - layer.getDx(), pos.y - layer.getDy() ) );
 
 		progressMonitor.subTask( tr( "Vectorizing area" ) );
 		return new AreaVectorizer().vectorize( area );
+	}
+
+	private Area select( TMSLayer layer, LatLon ll ) {
+		TileSource source = TMSLayer.getTileSource( layer.getInfo() );
+		TileCache cache = layer.getTileCache();
+		int zoom = layer.currentZoomLevel;
+
+		double tileX = source.lonToTileX( ll.lon(), zoom );
+		double tileY = source.latToTileY( ll.lat(), zoom );
+		Point tileCoord = new Point( (int) tileX, (int) tileY );
+
+		Tile tile = cache.getTile( source, (int) tileX, (int) tileY, zoom );
+		BufferedImage img = tile.getImage();
+
+		int ofsX = (int) Math.round( (tileX - (int) tileX) * img.getWidth() );
+		int ofsY = (int) Math.round( (tileY - (int) tileY) * img.getHeight() );
+		Point pointCoord = new Point( ofsX, ofsY );
+
+		ColorSelector colorSelector = createColorSelector( img, ofsX, ofsY );
+		AreaBuilder b = new AreaBuilder( this, colorSelector, source, cache, zoom );
+
+		b.enqueue( tileCoord, pointCoord );
+		b.process();
+
+		return b.result();
 	}
 }

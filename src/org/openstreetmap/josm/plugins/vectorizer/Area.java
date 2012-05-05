@@ -56,6 +56,27 @@ public class Area {
 		return tileArea.contains( x, y, this );
 	}
 
+	public AreaNormales buildNormales() {
+		AreaNormales normales = new AreaNormales( this );
+
+		for ( TileArea tileArea : getTileAreas() )
+			for ( int x = 0, xe = tileArea.getMatrixWidth(); x < xe; ++x )
+				for ( int y = 0, ye = tileArea.getMatrixHeight(); y < ye; ++y )
+					if ( tileArea.matrix[x + y * xe] ) {
+						if ( !tileArea.contains( x - 1, y, this ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 0, 2 * y + 1, 2, this ), Direction.LEFT );
+						if ( !tileArea.contains( x + 1, y, this ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 2, 2 * y + 1, 2, this ), Direction.RIGHT );
+
+						if ( !tileArea.contains( x, y - 1, this ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 1, 2 * y + 0, 2, this ), Direction.UP );
+						if ( !tileArea.contains( x, y + 1, this ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 1, 2 * y + 2, 2, this ), Direction.DOWN );
+					}
+
+		return normales;
+	}
+
 	private static double RADIUS_E = 6378137; // radius of Earth at equator, m
 	private static double EQUATOR = 40075016.68557849; // equator length, m
 	private static double E = 0.0818191908426; // eccentricity of Earth's ellipsoid

@@ -141,8 +141,11 @@ public class VectorizeTask extends PleaseWaitRunnable {
 		progressMonitor.subTask( tr( "Determining area" ) );
 		Area area = select( layer, Main.map.mapView.getLatLon( pos.x - layer.getDx(), pos.y - layer.getDy() ) );
 
-		progressMonitor.subTask( tr( "Vectorizing area" ) );
-		return new AreaVectorizer().vectorize( area );
+		progressMonitor.subTask( tr( "Building normales" ) );
+		AreaNormales normales = area.buildNormales();
+
+		progressMonitor.subTask( tr( "Building ways" ) );
+		return normales.buildWays();
 	}
 
 	private Area select( TMSLayer layer, LatLon ll ) {

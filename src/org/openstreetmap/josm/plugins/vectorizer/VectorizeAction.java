@@ -3,34 +3,18 @@ package org.openstreetmap.josm.plugins.vectorizer;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.awt.Cursor;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import org.openstreetmap.josm.Main;
 import org.openstreetmap.josm.actions.JosmAction;
-import org.openstreetmap.josm.command.AddCommand;
-import org.openstreetmap.josm.command.Command;
-import org.openstreetmap.josm.command.SequenceCommand;
-import org.openstreetmap.josm.data.osm.Node;
-import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.layer.ImageryLayer;
-import org.openstreetmap.josm.gui.layer.TMSLayer;
-import org.openstreetmap.josm.plugins.vectorizer.imageaccess.DirectImageAccess;
-import org.openstreetmap.josm.plugins.vectorizer.imageaccess.ImageAccess;
-import org.openstreetmap.josm.plugins.vectorizer.imageaccess.MedianImageAccess;
-import org.openstreetmap.josm.plugins.vectorizer.selectors.ColorSelector;
-import org.openstreetmap.josm.plugins.vectorizer.selectors.EllipsoidSelector;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Shortcut;
 
@@ -58,32 +42,11 @@ public class VectorizeAction extends JosmAction {
 					return;
 				}
 
-				List<Way> ways = vectorize( imageryLayers.get( 0 ), e.getPoint() );
-
-				if ( ways.isEmpty() )
-					return;
-
-				ArrayList<Command> commands = new ArrayList<Command>();
-
-				HashSet<Node> addedNodes = new HashSet<Node>();
-
-				for ( Way w : ways ) {
-					for ( Node n : w.getNodes() )
-						if ( !addedNodes.contains( n ) ) {
-							commands.add( new AddCommand( n ) );
-							addedNodes.add( n );
-						}
-
-					commands.add( new AddCommand( w ) );
-				}
-
-				Main.main.undoRedo.add( new SequenceCommand( tr( "Lakewalker trace" ), commands ) );
-				Main.main.getCurrentDataSet().setSelected( ways );
+				new Thread( new VectorizeTask( tr( "Vectorizing" ), imageryLayers.get( 0 ), e.getPoint() ) ).start();
 			}
 		}
 
 	};
-
 	private boolean active = false;
 	private Cursor oldCursor = null;
 
@@ -91,35 +54,6 @@ public class VectorizeAction extends JosmAction {
 		super( name, "lakewalker-sml", tr( "Vectorize feature." ), shortcut, true );
 
 		setEnabled( true );
-	}
-
-	protected List<Way> vectorize( ImageryLayer layer, Point pos ) {
-		if ( layer instanceof TMSLayer )
-			return vectorizeTMS( (TMSLayer) layer, pos );
-
-		return Collections.emptyList();
-	}
-
-	private List<Way> vectorizeTMS( TMSLayer layer, Point pos ) {
-		AreaBuilderContext areaSelector = new AreaBuilderContext() {
-
-			@Override
-			public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
-				return EllipsoidSelector.average( img, sx, sy, 2, 0 ).expand( 10 );
-			}
-
-			@Override
-			public ImageAccess createImageAccess( BufferedImage img ) {
-				return new MedianImageAccess( new DirectImageAccess( img ), 1 );
-			}
-
-		};
-
-		Area area = areaSelector.select( layer, Main.map.mapView.getLatLon( pos.x - layer.getDx(), pos.y - layer.getDy() ) );
-
-		//area.paint();
-
-		return new AreaVectorizer().vectorize( area );
 	}
 
 	public void actionPerformed( ActionEvent e ) {

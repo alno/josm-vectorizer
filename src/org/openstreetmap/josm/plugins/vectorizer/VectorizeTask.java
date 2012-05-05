@@ -47,6 +47,8 @@ public class VectorizeTask extends PleaseWaitRunnable {
 	private final ImageryLayer layer; // Source layer for vectorization
 	private final Point p; // Starting point of vectorization
 
+	private volatile boolean cancelled = false; // Is task cancelled?
+
 	public VectorizeTask( String title, ImageryLayer layer, Point p ) {
 		super( title );
 		this.layer = layer;
@@ -55,21 +57,26 @@ public class VectorizeTask extends PleaseWaitRunnable {
 
 	@Override
 	protected void realRun() {
-		final List<Way> ways = vectorize( layer, p );
+		try {
+			final List<Way> ways = vectorize( layer, p );
 
-		if ( ways.isEmpty() )
-			return;
+			if ( ways.isEmpty() )
+				return;
 
-		progressMonitor.subTask( tr( "Preparing commands" ) );
-		Main.main.undoRedo.add( new SequenceCommand( tr( "Vectorizing area" ), buildCommands( ways ) ) );
+			final SequenceCommand command = new SequenceCommand( tr( "Vectorizing area" ), buildCommands( ways ) );
 
-		SwingUtilities.invokeLater( new Runnable() {
+			progressMonitor.subTask( tr( "Appending commands" ) );
+			SwingUtilities.invokeLater( new Runnable() {
 
-			public void run() {
-				Main.main.getCurrentDataSet().setSelected( ways );
-			}
+				public void run() {
+					Main.main.undoRedo.add( command );
+					Main.main.getCurrentDataSet().setSelected( ways );
+				}
 
-		} );
+			} );
+		} catch ( CancelledException e ) {
+			System.out.println( "Vectorizing task cancelled" );
+		}
 	}
 
 	@Override
@@ -78,16 +85,19 @@ public class VectorizeTask extends PleaseWaitRunnable {
 
 	@Override
 	protected void cancel() {
-		// TODO
+		cancelled = true;
 	}
 
 	/**
 	 * Build sequence of commands for vectorized ways
+	 * 
+	 * @throws CancelledException
 	 */
-	protected List<Command> buildCommands( List<Way> ways ) {
+	protected List<Command> buildCommands( List<Way> ways ) throws CancelledException {
 		List<Command> commands = new ArrayList<Command>();
 		Set<Node> markedNodes = new HashSet<Node>();
 
+		progressMonitor.subTask( tr( "Building commands" ) );
 		progressMonitor.setTicksCount( ways.size() );
 		progressMonitor.setTicks( 0 );
 
@@ -102,15 +112,21 @@ public class VectorizeTask extends PleaseWaitRunnable {
 
 	/**
 	 * Build sequence of commands for single way
+	 * 
+	 * @throws CancelledException
 	 */
-	protected List<Command> buildWayCommands( Set<Node> markedNodes, Way way ) {
+	protected List<Command> buildWayCommands( Set<Node> markedNodes, Way way ) throws CancelledException {
 		List<Command> wayCommands = new ArrayList<Command>();
 
-		for ( Node n : way.getNodes() )
+		for ( Node n : way.getNodes() ) {
+			if ( cancelled )
+				throw new CancelledException();
+
 			if ( !markedNodes.contains( n ) ) {
 				wayCommands.add( new AddCommand( n ) );
 				markedNodes.add( n );
 			}
+		}
 
 		wayCommands.add( new AddCommand( way ) );
 

@@ -11,21 +11,18 @@ public class TileArea {
 	public final Tile tile;
 
 	public final boolean[] matrix;
-	private final Point tileThis, tileLeft, tileRight, tileUp, tileDown;
+	public final int width, height;
+	public final Point coord;
 
-	public int getMatrixWidth() {
-		return tile.getImage().getWidth();
-	}
-
-	public int getMatrixHeight() {
-		return tile.getImage().getWidth();
-	}
+	private final Point tileLeft, tileRight, tileUp, tileDown;
 
 	public TileArea( Tile tile, boolean[] matrix ) {
 		this.tile = tile;
 		this.matrix = matrix;
+		this.width = tile.getImage().getWidth();
+		this.height = tile.getImage().getHeight();
 
-		this.tileThis = new Point( tile.getXtile(), tile.getYtile() );
+		this.coord = new Point( tile.getXtile(), tile.getYtile() );
 		this.tileLeft = new Point( tile.getXtile() - 1, tile.getYtile() );
 		this.tileRight = new Point( tile.getXtile() + 1, tile.getYtile() );
 		this.tileUp = new Point( tile.getXtile(), tile.getYtile() - 1 );
@@ -55,20 +52,6 @@ public class TileArea {
 			return out.contains( tileDown, x, y - tile.getImage().getHeight() );
 
 		return matrix[x + y * tile.getImage().getWidth()];
-	}
-
-	public TilePoint getTilePoint( int x, int y, int m, Area out ) {
-		if ( x < 0 )
-			return out.getTilePoint( tileLeft, x + m * tile.getImage().getWidth(), y, m );
-		if ( x >= m * tile.getImage().getWidth() )
-			return out.getTilePoint( tileRight, x - m * tile.getImage().getWidth(), y, m );
-
-		if ( y < 0 )
-			return out.getTilePoint( tileUp, x, y + m * tile.getImage().getHeight(), m );
-		if ( y >= m * tile.getImage().getHeight() )
-			return out.getTilePoint( tileDown, x, y - m * tile.getImage().getHeight(), m );
-
-		return new TilePoint( tileThis, new Point( x, y ) );
 	}
 
 }

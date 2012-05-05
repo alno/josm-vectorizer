@@ -38,13 +38,39 @@ public class Area {
 			tile.paint();
 	}
 
-	public TilePoint getTilePoint( Point tilePoint, int x, int y, int m ) {
-		TileArea tileArea = tiles.get( tilePoint );
+	public TilePoint getTilePoint( Point tp, int x, int y, int m ) {
+		if ( x < 0 ) {
+			Point tpl = new Point( tp.x - 1, tp.y );
+			TileArea tal = tiles.get( tpl );
 
-		if ( tileArea == null )
-			return new TilePoint( tilePoint.x, tilePoint.y, x, y );
+			if ( tal == null )
+				return new TilePoint( tp.x, tp.y, x, y );
 
-		return tileArea.getTilePoint( x, y, m, this );
+			return getTilePoint( tpl, x + m * tal.width, y, m );
+		}
+
+		if ( y < 0 ) {
+			Point tpd = new Point( tp.x, tp.y - 1 );
+			TileArea tad = tiles.get( tpd );
+
+			if ( tad == null )
+				return new TilePoint( tp.x, tp.y, x, y );
+
+			return getTilePoint( tpd, x, y + m * tad.height, m );
+		}
+
+		TileArea ta = tiles.get( tp );
+
+		if ( ta == null )
+			return new TilePoint( tp.x, tp.y, x, y );
+
+		if ( x >= m * ta.width )
+			return getTilePoint( new Point( tp.x + 1, tp.y ), x - m * ta.width, y, m );
+
+		if ( y >= m * ta.height )
+			return getTilePoint( new Point( tp.x, tp.y + 1 ), x, y - m * ta.height, m );
+
+		return new TilePoint( ta.coord, new Point( x, y ) );
 	}
 
 	public boolean contains( Point tilePoint, int x, int y ) {
@@ -60,18 +86,18 @@ public class Area {
 		AreaNormales normales = new AreaNormales( this );
 
 		for ( TileArea tileArea : getTileAreas() )
-			for ( int x = 0, xe = tileArea.getMatrixWidth(); x < xe; ++x )
-				for ( int y = 0, ye = tileArea.getMatrixHeight(); y < ye; ++y )
+			for ( int x = 0, xe = tileArea.width; x < xe; ++x )
+				for ( int y = 0, ye = tileArea.height; y < ye; ++y )
 					if ( tileArea.matrix[x + y * xe] ) {
 						if ( !tileArea.contains( x - 1, y, this ) )
-							normales.put( tileArea.getTilePoint( 2 * x + 0, 2 * y + 1, 2, this ), Direction.LEFT );
+							normales.put( getTilePoint( tileArea.coord, 2 * x + 0, 2 * y + 1, 2 ), Direction.LEFT );
 						if ( !tileArea.contains( x + 1, y, this ) )
-							normales.put( tileArea.getTilePoint( 2 * x + 2, 2 * y + 1, 2, this ), Direction.RIGHT );
+							normales.put( getTilePoint( tileArea.coord, 2 * x + 2, 2 * y + 1, 2 ), Direction.RIGHT );
 
 						if ( !tileArea.contains( x, y - 1, this ) )
-							normales.put( tileArea.getTilePoint( 2 * x + 1, 2 * y + 0, 2, this ), Direction.UP );
+							normales.put( getTilePoint( tileArea.coord, 2 * x + 1, 2 * y + 0, 2 ), Direction.UP );
 						if ( !tileArea.contains( x, y + 1, this ) )
-							normales.put( tileArea.getTilePoint( 2 * x + 1, 2 * y + 2, 2, this ), Direction.DOWN );
+							normales.put( getTilePoint( tileArea.coord, 2 * x + 1, 2 * y + 2, 2 ), Direction.DOWN );
 					}
 
 		return normales;

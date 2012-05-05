@@ -37,12 +37,28 @@ public class TileAreaBuilder {
 	}
 
 	public void enqueue( Point p ) {
-		int ind = p.x + p.y * img.getWidth();
+		int x = p.x;
+		int y = p.y;
+
+		if ( x < 0 )
+			x += img.getWidth();
+
+		if ( y < 0 )
+			y += img.getHeight();
+
+		// XXX Ugly solution, but tiles may have different sizes o_O
+		if (x >= img.getWidth())
+			x = img.getWidth() - 1;
+
+		if (y >= img.getHeight())
+			y = img.getHeight() - 1;
+
+		int ind = x + y * img.getWidth();
 
 		if ( matrix[ind] )
 			return;
 
-		if ( !colorSelector.test( img.getRGB( p.x, p.y ) ) )
+		if ( !colorSelector.test( img.getRGB( x, y ) ) )
 			return;
 
 		matrix[ind] = true;
@@ -60,7 +76,7 @@ public class TileAreaBuilder {
 			if ( p.x > 0 )
 				enqueue( new Point( p.x - 1, p.y ) );
 			else
-				builder.enqueue( tileLeft, new Point( img.getWidth() - 1, p.y ) );
+				builder.enqueue( tileLeft, new Point( -1, p.y ) );
 
 			if ( p.x < img.getWidth() - 1 )
 				enqueue( new Point( p.x + 1, p.y ) );
@@ -70,7 +86,7 @@ public class TileAreaBuilder {
 			if ( p.y > 0 )
 				enqueue( new Point( p.x, p.y - 1 ) );
 			else
-				builder.enqueue( tileUp, new Point( p.x, img.getHeight() - 1 ) );
+				builder.enqueue( tileUp, new Point( p.x, -1 ) );
 
 			if ( p.y < img.getHeight() - 1 )
 				enqueue( new Point( p.x, p.y + 1 ) );

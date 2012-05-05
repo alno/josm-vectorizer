@@ -45,7 +45,7 @@ public class VectorizeTask extends PleaseWaitRunnable {
 	}
 
 	public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
-		return EllipsoidSelector.average( img, sx, sy, 2, 0 ).expand( 10 );
+		return EllipsoidSelector.average( img, sx, sy, 3, 0 ).expand( 5 );
 	}
 
 	public ImageAccess createImageAccess( BufferedImage img ) {
@@ -87,7 +87,7 @@ public class VectorizeTask extends PleaseWaitRunnable {
 
 	/**
 	 * Build sequence of commands for vectorized ways
-	 * 
+	 *
 	 * @throws CancelledException
 	 */
 	protected List<Command> buildCommands( List<Way> ways ) throws CancelledException {
@@ -109,7 +109,7 @@ public class VectorizeTask extends PleaseWaitRunnable {
 
 	/**
 	 * Build sequence of commands for single way
-	 * 
+	 *
 	 * @throws CancelledException
 	 */
 	protected List<Command> buildWayCommands( Set<Node> markedNodes, Way way ) throws CancelledException {

@@ -20,38 +20,38 @@ public class TileAreaBuilder {
 
 	private final Queue<Point> queue = new ArrayDeque<Point>();
 
-	private final Point tileLeft, tileRight, tileUp, tileDown;
+	private TileAreaBuilder left, right, up, down;
+	private boolean leftSet, rightSet, upSet, downSet;
+
+	private final Point coord;
+	private final int width, height;
 
 	public TileAreaBuilder( AreaBuilder builder, Tile tile ) {
 		this.builder = builder;
 		this.tile = tile;
 		this.colorSelector = builder.colorSelector;
 		this.img = builder.task.createImageAccess( tile.getImage() );
+		this.coord = new Point( tile.getXtile(), tile.getYtile() );
+		this.width = tile.getImage().getWidth();
+		this.height = tile.getImage().getHeight();
 
 		this.matrix = new boolean[img.getWidth() * img.getHeight()];
-
-		this.tileLeft = new Point( tile.getXtile() - 1, tile.getYtile() );
-		this.tileRight = new Point( tile.getXtile() + 1, tile.getYtile() );
-		this.tileUp = new Point( tile.getXtile(), tile.getYtile() - 1 );
-		this.tileDown = new Point( tile.getXtile(), tile.getYtile() + 1 );
 	}
 
 	public void enqueue( Point p ) {
 		int x = p.x;
 		int y = p.y;
 
-		if ( x < 0 )
-			x += img.getWidth();
+		// XXX Ugly solution, but tiles may have different sizes, so we need to fix them o_O
+		if ( x >= width ) {
+			System.out.println( "Fixing x: " + x + " -> " + (width - 1) );
+			x = width - 1;
+		}
 
-		if ( y < 0 )
-			y += img.getHeight();
-
-		// XXX Ugly solution, but tiles may have different sizes o_O
-		if (x >= img.getWidth())
-			x = img.getWidth() - 1;
-
-		if (y >= img.getHeight())
-			y = img.getHeight() - 1;
+		if ( y >= height ) {
+			System.out.println( "Fixing y: " + y + " -> " + (height - 1) );
+			y = height - 1;
+		}
 
 		int ind = x + y * img.getWidth();
 
@@ -75,28 +75,64 @@ public class TileAreaBuilder {
 
 			if ( p.x > 0 )
 				enqueue( new Point( p.x - 1, p.y ) );
-			else
-				builder.enqueue( tileLeft, new Point( -1, p.y ) );
+			else if ( left() != null )
+				left().enqueue( new Point( left().width - 1, p.y ) );
 
-			if ( p.x < img.getWidth() - 1 )
+			if ( p.x < width - 1 )
 				enqueue( new Point( p.x + 1, p.y ) );
-			else
-				builder.enqueue( tileRight, new Point( 0, p.y ) );
+			else if ( right() != null )
+				right().enqueue( new Point( 0, p.y ) );
 
 			if ( p.y > 0 )
 				enqueue( new Point( p.x, p.y - 1 ) );
-			else
-				builder.enqueue( tileUp, new Point( p.x, -1 ) );
+			else if ( up() != null )
+				up().enqueue( new Point( p.x, up().height - 1 ) );
 
-			if ( p.y < img.getHeight() - 1 )
+			if ( p.y < height - 1 )
 				enqueue( new Point( p.x, p.y + 1 ) );
-			else
-				builder.enqueue( tileDown, new Point( p.x, 0 ) );
+			else if ( down() != null )
+				down().enqueue( new Point( p.x, 0 ) );
 		}
 	}
 
 	public TileArea result() {
 		return new TileArea( tile, matrix );
+	}
+
+	protected TileAreaBuilder left() {
+		if ( !leftSet ) {
+			left = builder.getTileBuilder( new Point( coord.x - 1, coord.y ) );
+			leftSet = true;
+		}
+
+		return left;
+	}
+
+	protected TileAreaBuilder right() {
+		if ( !rightSet ) {
+			right = builder.getTileBuilder( new Point( coord.x + 1, coord.y ) );
+			rightSet = true;
+		}
+
+		return right;
+	}
+
+	protected TileAreaBuilder up() {
+		if ( !upSet ) {
+			up = builder.getTileBuilder( new Point( coord.x, coord.y - 1 ) );
+			upSet = true;
+		}
+
+		return up;
+	}
+
+	protected TileAreaBuilder down() {
+		if ( !downSet ) {
+			down = builder.getTileBuilder( new Point( coord.x, coord.y + 1 ) );
+			downSet = true;
+		}
+
+		return down;
 	}
 
 }

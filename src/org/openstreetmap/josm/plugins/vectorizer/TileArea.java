@@ -14,19 +14,15 @@ public class TileArea {
 	public final int width, height;
 	public final Point coord;
 
-	private final Point tileLeft, tileRight, tileUp, tileDown;
+	private TileArea left, right, up, down;
+	private boolean leftSet, rightSet, upSet, downSet;
 
 	public TileArea( Tile tile, boolean[] matrix ) {
 		this.tile = tile;
 		this.matrix = matrix;
 		this.width = tile.getImage().getWidth();
 		this.height = tile.getImage().getHeight();
-
 		this.coord = new Point( tile.getXtile(), tile.getYtile() );
-		this.tileLeft = new Point( tile.getXtile() - 1, tile.getYtile() );
-		this.tileRight = new Point( tile.getXtile() + 1, tile.getYtile() );
-		this.tileUp = new Point( tile.getXtile(), tile.getYtile() - 1 );
-		this.tileDown = new Point( tile.getXtile(), tile.getYtile() + 1 );
 	}
 
 	public void paint() {
@@ -42,16 +38,53 @@ public class TileArea {
 
 	public boolean contains( int x, int y, Area out ) {
 		if ( x < 0 )
-			return out.contains( tileLeft, x + tile.getImage().getWidth(), y );
+			return left( out ) != null && left( out ).contains( x + left( out ).width, y, out );
 		if ( x >= tile.getImage().getWidth() )
-			return out.contains( tileRight, x - tile.getImage().getWidth(), y );
+			return right( out ) != null && right( out ).contains( x - width, y, out );
 
 		if ( y < 0 )
-			return out.contains( tileUp, x, y + tile.getImage().getHeight() );
+			return up( out ) != null && up( out ).contains( x, y + up( out ).height, out );
+
 		if ( y >= tile.getImage().getHeight() )
-			return out.contains( tileDown, x, y - tile.getImage().getHeight() );
+			return down( out ) != null && down( out ).contains( x, y - height, out );
 
 		return matrix[x + y * tile.getImage().getWidth()];
+	}
+
+	protected TileArea left( Area out ) {
+		if ( !leftSet ) {
+			left = out.getTileArea( new Point( coord.x - 1, coord.y ) );
+			leftSet = true;
+		}
+
+		return left;
+	}
+
+	protected TileArea right( Area out ) {
+		if ( !rightSet ) {
+			right = out.getTileArea( new Point( coord.x + 1, coord.y ) );
+			rightSet = true;
+		}
+
+		return right;
+	}
+
+	protected TileArea up( Area out ) {
+		if ( !upSet ) {
+			up = out.getTileArea( new Point( coord.x, coord.y - 1 ) );
+			upSet = true;
+		}
+
+		return up;
+	}
+
+	protected TileArea down( Area out ) {
+		if ( !downSet ) {
+			down = out.getTileArea( new Point( coord.x, coord.y + 1 ) );
+			downSet = true;
+		}
+
+		return down;
 	}
 
 }

@@ -73,15 +73,6 @@ public class Area {
 		return new TilePoint( ta.coord, new Point( x, y ) );
 	}
 
-	public boolean contains( Point tilePoint, int x, int y ) {
-		TileArea tileArea = tiles.get( tilePoint );
-
-		if ( tileArea == null )
-			return false;
-
-		return tileArea.contains( x, y, this );
-	}
-
 	public AreaNormales buildNormales() {
 		AreaNormales normales = new AreaNormales( this );
 

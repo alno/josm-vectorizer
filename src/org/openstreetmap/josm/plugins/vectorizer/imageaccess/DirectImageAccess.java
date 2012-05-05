@@ -1,4 +1,4 @@
-package org.openstreetmap.josm.plugins.vectorizer;
+package org.openstreetmap.josm.plugins.vectorizer.imageaccess;
 
 import java.awt.image.BufferedImage;
 

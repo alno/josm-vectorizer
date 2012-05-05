@@ -1,4 +1,4 @@
-package org.openstreetmap.josm.plugins.vectorizer;
+package org.openstreetmap.josm.plugins.vectorizer.imageaccess;
 
 public interface ImageAccess {
 	

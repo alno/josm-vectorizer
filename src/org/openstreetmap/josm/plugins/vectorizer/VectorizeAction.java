@@ -34,7 +34,7 @@ public class VectorizeAction extends JosmAction {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Shortcut shortcut = Shortcut.registerShortcut( "tools:vectorize", tr( "Tool: {0}", tr( "Vectorizer" ) ), KeyEvent.VK_L, Shortcut.ALT_CTRL_SHIFT );
+	private static final Shortcut shortcut = Shortcut.registerShortcut( "tools:vectorize", tr( "Tool: {0}", tr( "Vectorizer" ) ), KeyEvent.VK_V, Shortcut.CTRL_SHIFT );
 
 	private final MouseListener mouseListener = new MouseAdapter() {
 
@@ -96,7 +96,7 @@ public class VectorizeAction extends JosmAction {
 
 			@Override
 			public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
-				return EllipsoidSelector.average( img, sx, sy, 2, 0 );
+				return EllipsoidSelector.average( img, sx, sy, 2, 0 ).expand(10);
 			}
 
 		};
@@ -105,7 +105,7 @@ public class VectorizeAction extends JosmAction {
 
 		//area.paint();
 
-		return new BorderBuilder().build( area );
+		return new AreaVectorizer().vectorize( area );
 	}
 
 	public void actionPerformed( ActionEvent e ) {

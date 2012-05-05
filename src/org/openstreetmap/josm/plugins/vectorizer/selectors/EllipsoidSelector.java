@@ -25,8 +25,12 @@ public class EllipsoidSelector implements ColorSelector {
 		return Math.sqrt( d ) <= 1;
 	}
 
-	public ColorSelector scale( double scale ) {
+	public EllipsoidSelector scale( double scale ) {
 		return new EllipsoidSelector( cr, cg, cb, sr * scale, sg * scale, sb * scale );
+	}
+
+	public EllipsoidSelector expand( double radius ) {
+		return new EllipsoidSelector( cr, cg, cb, sr + radius, sg + radius, sb + radius );
 	}
 
 	private static double sqr( double x ) {
@@ -62,9 +66,9 @@ public class EllipsoidSelector implements ColorSelector {
 				sb += sqr( ((c >> 0) & 0xFF) - cb );
 			}
 
-		sr = 3 * Math.sqrt( sr / count ) + 5;
-		sg = 3 * Math.sqrt( sg / count ) + 5;
-		sb = 3 * Math.sqrt( sb / count ) + 5;
+		sr = 3 * Math.sqrt( sr / count );
+		sg = 3 * Math.sqrt( sg / count );
+		sb = 3 * Math.sqrt( sb / count );
 
 		return new EllipsoidSelector( cr, cg, cb, sr, sg, sb );
 	}

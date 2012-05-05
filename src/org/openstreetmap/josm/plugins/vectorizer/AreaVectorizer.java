@@ -2,7 +2,6 @@ package org.openstreetmap.josm.plugins.vectorizer;
 
 import java.awt.Point;
 import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,19 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.openstreetmap.gui.jmapviewer.Tile;
-import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
 
-public class BorderBuilder {
+public class AreaVectorizer {
 
 	private static final int LEFT = 0;
 	private static final int UP = 1;
 	private static final int RIGHT = 2;
 	private static final int DOWN = 3;
 
-	public List<Way> build( TileArea area ) {
+	public List<Way> vectorize( TileArea area ) {
 		Map<Point, Integer> normales = new HashMap<Point, Integer>();
 
 		for ( int x = 0, xe = area.getMatrixWidth(); x < xe; ++x )
@@ -53,29 +50,21 @@ public class BorderBuilder {
 				e = first( normales, next( e ) );
 			}
 
+			nodes.add( nodes.get( 0 ) );
+
 			ArrayList<Node> newNodes = new ArrayList<Node>();
 
 			buildSimplifiedNodeList( nodes, 0, nodes.size() - 1, d, newNodes );
 
 			if ( newNodes.size() > 3 ) {
-				newNodes.add( newNodes.get( 0 ) );
-
 				Way way = new Way();
 				way.setNodes( newNodes );
-
 				ways.add( way );
 			}
 		}
 
 		return ways;
 	}
-
-	private static double RADIUS_E = 6378137; /* radius of Earth at equator, m */
-	private static double EQUATOR = 40075016.68557849; /* equator length, m */
-	private static double E = 0.0818191908426; /*
-												 * eccentricity of Earth's
-												 * ellipsoid
-												 */
 
 	private Node buildNode( TileArea a, Point p ) {
 		return new Node( a.getLatLon( (p.x + 1) * 0.5, (p.y + 1) * 0.5 ) );

@@ -1,11 +1,11 @@
 package org.openstreetmap.josm.plugins.vectorizer;
 
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
 import org.openstreetmap.gui.jmapviewer.Tile;
+import org.openstreetmap.josm.plugins.vectorizer.imageaccess.ImageAccess;
 import org.openstreetmap.josm.plugins.vectorizer.selectors.ColorSelector;
 
 public class TileAreaBuilder {
@@ -23,7 +23,7 @@ public class TileAreaBuilder {
 		this.colorSelector = colorSelector;
 		this.tile = tile;
 		this.img = img;
-		
+
 		this.matrix = new boolean[img.getWidth() * img.getHeight()];
 	}
 
@@ -38,6 +38,10 @@ public class TileAreaBuilder {
 
 		matrix[ind] = true;
 		queue.add( p );
+	}
+
+	public boolean queued() {
+		return !queue.isEmpty();
 	}
 
 	public void process() {

@@ -8,6 +8,8 @@ import org.openstreetmap.gui.jmapviewer.interfaces.TileCache;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
 import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.gui.layer.TMSLayer;
+import org.openstreetmap.josm.plugins.vectorizer.imageaccess.DirectImageAccess;
+import org.openstreetmap.josm.plugins.vectorizer.imageaccess.MedianImageAccess;
 import org.openstreetmap.josm.plugins.vectorizer.selectors.ColorSelector;
 
 public abstract class AreaSelector {

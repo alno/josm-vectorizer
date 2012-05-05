@@ -6,6 +6,7 @@ import java.util.Random;
 import org.openstreetmap.gui.jmapviewer.OsmMercator;
 import org.openstreetmap.gui.jmapviewer.Tile;
 import org.openstreetmap.gui.jmapviewer.interfaces.TileSource;
+import org.openstreetmap.gui.jmapviewer.tilesources.AbstractTMSTileSource;
 import org.openstreetmap.gui.jmapviewer.tilesources.ScanexTileSource;
 import org.openstreetmap.josm.data.coor.LatLon;
 
@@ -81,9 +82,15 @@ public class TileArea {
 			double lon = (tx / Math.pow( 2.0, zoom - 1 ) - 1) * (90 * EQUATOR) / RADIUS_E / Math.PI;
 
 			return new LatLon( lat, lon );
+
+		} else if ( src instanceof AbstractTMSTileSource ) {
+			double lat = Math.atan( Math.sinh( Math.PI - (Math.PI * ty / Math.pow( 2.0, zoom - 1 )) ) ) * 180 / Math.PI;
+			double lon = tx * 45.0 / Math.pow( 2.0, zoom - 3 ) - 180.0;
+
+			return new LatLon( lat, lon );
 		}
 
-		return null;
+		throw new Error( "Unknown tile source type: " + src.getClass() );
 	}
 
 }

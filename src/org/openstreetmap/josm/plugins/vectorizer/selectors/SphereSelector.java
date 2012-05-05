@@ -27,7 +27,7 @@ public class SphereSelector implements ColorSelector {
 		d += sqr( g - ((color >> 8) & 0xFF) );
 		d += sqr( b - (color & 0xFF) );
 
-		return Math.sqrt(d) <= sd;
+		return Math.sqrt( d ) <= sd;
 	}
 
 	public ColorSelector scale( double scale ) {
@@ -35,7 +35,7 @@ public class SphereSelector implements ColorSelector {
 	}
 
 	private static double sqr( double x ) {
-		return x*x;
+		return x * x;
 	}
 
 	public static SphereSelector average( BufferedImage img, int sx, int sy, int r, int sd ) {

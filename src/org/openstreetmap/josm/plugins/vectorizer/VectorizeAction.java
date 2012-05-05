@@ -12,6 +12,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -25,6 +26,9 @@ import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.layer.ImageryLayer;
 import org.openstreetmap.josm.gui.layer.TMSLayer;
+import org.openstreetmap.josm.plugins.vectorizer.imageaccess.DirectImageAccess;
+import org.openstreetmap.josm.plugins.vectorizer.imageaccess.ImageAccess;
+import org.openstreetmap.josm.plugins.vectorizer.imageaccess.MedianImageAccess;
 import org.openstreetmap.josm.plugins.vectorizer.selectors.ColorSelector;
 import org.openstreetmap.josm.plugins.vectorizer.selectors.EllipsoidSelector;
 import org.openstreetmap.josm.tools.ImageProvider;
@@ -61,9 +65,14 @@ public class VectorizeAction extends JosmAction {
 
 				ArrayList<Command> commands = new ArrayList<Command>();
 
+				HashSet<Node> addedNodes = new HashSet<Node>();
+
 				for ( Way w : ways ) {
-					for ( Node n : w.getNodes().subList( 0, w.getNodesCount() - 1 ) )
-						commands.add( new AddCommand( n ) );
+					for ( Node n : w.getNodes() )
+						if ( !addedNodes.contains( n ) ) {
+							commands.add( new AddCommand( n ) );
+							addedNodes.add( n );
+						}
 
 					commands.add( new AddCommand( w ) );
 				}
@@ -80,7 +89,7 @@ public class VectorizeAction extends JosmAction {
 
 	public VectorizeAction( String name ) {
 		super( name, "lakewalker-sml", tr( "Vectorize feature." ), shortcut, true );
-		
+
 		setEnabled( true );
 	}
 
@@ -92,16 +101,21 @@ public class VectorizeAction extends JosmAction {
 	}
 
 	private List<Way> vectorizeTMS( TMSLayer layer, Point pos ) {
-		AreaSelector areaSelector = new AreaSelector() {
+		AreaBuilderContext areaSelector = new AreaBuilderContext() {
 
 			@Override
 			public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
-				return EllipsoidSelector.average( img, sx, sy, 2, 0 ).expand(10);
+				return EllipsoidSelector.average( img, sx, sy, 2, 0 ).expand( 10 );
+			}
+
+			@Override
+			public ImageAccess createImageAccess( BufferedImage img ) {
+				return new MedianImageAccess( new DirectImageAccess( img ), 1 );
 			}
 
 		};
 
-		TileArea area = areaSelector.select( layer, Main.map.mapView.getLatLon( pos.x - layer.getDx(), pos.y - layer.getDy() ) );
+		Area area = areaSelector.select( layer, Main.map.mapView.getLatLon( pos.x - layer.getDx(), pos.y - layer.getDy() ) );
 
 		//area.paint();
 

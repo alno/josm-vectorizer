@@ -11,8 +11,8 @@ public class VectorizerPlugin extends Plugin {
 
 	public VectorizerPlugin( PluginInformation info ) {
 		super( info );
-		
-		MainMenu.add(Main.main.menu.toolsMenu, new VectorizeAction(tr("Vectorize feature")));
+
+		MainMenu.add( Main.main.menu.toolsMenu, new VectorizeAction( tr( "Vectorize feature" ) ) );
 	}
 
 }

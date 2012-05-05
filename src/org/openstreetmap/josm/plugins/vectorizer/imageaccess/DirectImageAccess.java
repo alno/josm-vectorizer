@@ -3,7 +3,7 @@ package org.openstreetmap.josm.plugins.vectorizer.imageaccess;
 import java.awt.image.BufferedImage;
 
 public class DirectImageAccess implements ImageAccess {
-	
+
 	private final BufferedImage img;
 
 	public DirectImageAccess( BufferedImage img ) {
@@ -19,9 +19,7 @@ public class DirectImageAccess implements ImageAccess {
 	}
 
 	public int getRGB( int x, int y ) {
-		return img.getRGB(x, y);
+		return img.getRGB( x, y );
 	}
-	
-	
 
 }

@@ -19,22 +19,23 @@ public class AreaVectorizer {
 	private static final int RIGHT = 2;
 	private static final int DOWN = 3;
 
-	public List<Way> vectorize( TileArea area ) {
-		Map<Point, Integer> normales = new HashMap<Point, Integer>();
+	public List<Way> vectorize( Area area ) {
+		Map<TilePoint, Integer> normales = new HashMap<TilePoint, Integer>();
 
-		for ( int x = 0, xe = area.getMatrixWidth(); x < xe; ++x )
-			for ( int y = 0, ye = area.getMatrixHeight(); y < ye; ++y )
-				if ( area.matrix[x + y * xe] ) {
-					if ( x <= 0 || !area.matrix[x - 1 + y * xe] )
-						normales.put( new Point( 2 * x - 1, 2 * y ), LEFT );
-					if ( x >= xe - 1 || !area.matrix[x + 1 + y * xe] )
-						normales.put( new Point( 2 * x + 1, 2 * y ), RIGHT );
+		for ( TileArea tileArea : area.getTileAreas() )
+			for ( int x = 0, xe = tileArea.getMatrixWidth(); x < xe; ++x )
+				for ( int y = 0, ye = tileArea.getMatrixHeight(); y < ye; ++y )
+					if ( tileArea.matrix[x + y * xe] ) {
+						if ( !tileArea.contains( x - 1, y, area ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 0, 2 * y + 1, 2, area ), LEFT );
+						if ( !tileArea.contains( x + 1, y, area ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 2, 2 * y + 1, 2, area ), RIGHT );
 
-					if ( y <= 0 || !area.matrix[x + (y - 1) * xe] )
-						normales.put( new Point( 2 * x, 2 * y - 1 ), UP );
-					if ( y >= ye - 1 || !area.matrix[x + (y + 1) * xe] )
-						normales.put( new Point( 2 * x, 2 * y + 1 ), DOWN );
-				}
+						if ( !tileArea.contains( x, y - 1, area ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 1, 2 * y + 0, 2, area ), UP );
+						if ( !tileArea.contains( x, y + 1, area ) )
+							normales.put( tileArea.getTilePoint( 2 * x + 1, 2 * y + 2, 2, area ), DOWN );
+					}
 
 		ArrayList<Way> ways = new ArrayList<Way>();
 
@@ -43,11 +44,11 @@ public class AreaVectorizer {
 		while ( !normales.isEmpty() ) {
 			ArrayList<Node> nodes = new ArrayList<Node>();
 
-			Map.Entry<Point, Integer> e = first( normales );
+			Map.Entry<TilePoint, Integer> e = first( normales );
 
 			while ( e != null ) {
-				nodes.add( buildNode( area, e.getKey() ) );
-				e = first( normales, next( e ) );
+				nodes.add( new Node( area.getLatLon( e.getKey(), 2 ) ) );
+				e = first( normales, next( area, e ) );
 			}
 
 			nodes.add( nodes.get( 0 ) );
@@ -66,40 +67,41 @@ public class AreaVectorizer {
 		return ways;
 	}
 
-	private Node buildNode( TileArea a, Point p ) {
-		return new Node( a.getLatLon( (p.x + 1) * 0.5, (p.y + 1) * 0.5 ) );
-	}
-
-	private Point[] next( Map.Entry<Point, Integer> e ) {
-		Point p = e.getKey();
+	private TilePoint[] next( Area a, Map.Entry<TilePoint, Integer> e ) {
+		TilePoint p = e.getKey();
+		Point tp = new Point( p.tileX, p.tileY );
 
 		switch ( e.getValue() ) {
 		case LEFT:
-			return new Point[] { new Point( p.x - 1, p.y - 1 ), new Point( p.x, p.y - 2 ), new Point( p.x + 1, p.y - 1 ) };
+			return new TilePoint[] { a.getTilePoint( tp, p.offsetX - 1, p.offsetY - 1, 2 ), a.getTilePoint( tp, p.offsetX, p.offsetY - 2, 2 ),
+					a.getTilePoint( tp, p.offsetX + 1, p.offsetY - 1, 2 ) };
 		case RIGHT:
-			return new Point[] { new Point( p.x + 1, p.y + 1 ), new Point( p.x, p.y + 2 ), new Point( p.x - 1, p.y + 1 ) };
+			return new TilePoint[] { a.getTilePoint( tp, p.offsetX + 1, p.offsetY + 1, 2 ), a.getTilePoint( tp, p.offsetX, p.offsetY + 2, 2 ),
+					a.getTilePoint( tp, p.offsetX - 1, p.offsetY + 1, 2 ) };
 		case UP:
-			return new Point[] { new Point( p.x + 1, p.y - 1 ), new Point( p.x + 2, p.y ), new Point( p.x + 1, p.y + 1 ) };
+			return new TilePoint[] { a.getTilePoint( tp, p.offsetX + 1, p.offsetY - 1, 2 ), a.getTilePoint( tp, p.offsetX + 2, p.offsetY, 2 ),
+					a.getTilePoint( tp, p.offsetX + 1, p.offsetY + 1, 2 ) };
 		case DOWN:
-			return new Point[] { new Point( p.x - 1, p.y - 1 ), new Point( p.x - 2, p.y ), new Point( p.x - 1, p.y + 1 ) };
+			return new TilePoint[] { a.getTilePoint( tp, p.offsetX - 1, p.offsetY - 1, 2 ), a.getTilePoint( tp, p.offsetX - 2, p.offsetY, 2 ),
+					a.getTilePoint( tp, p.offsetX - 1, p.offsetY + 1, 2 ) };
 		}
 
 		throw new Error();
 	}
 
-	private Map.Entry<Point, Integer> first( Map<Point, Integer> normales ) {
-		Iterator<Entry<Point, Integer>> it = normales.entrySet().iterator();
-		Map.Entry<Point, Integer> e = it.next();
+	private Map.Entry<TilePoint, Integer> first( Map<TilePoint, Integer> normales ) {
+		Iterator<Entry<TilePoint, Integer>> it = normales.entrySet().iterator();
+		Map.Entry<TilePoint, Integer> e = it.next();
 		it.remove();
 		return e;
 	}
 
-	private Map.Entry<Point, Integer> first( Map<Point, Integer> normales, Point[] keys ) {
-		for ( Point key : keys ) {
+	private Map.Entry<TilePoint, Integer> first( Map<TilePoint, Integer> normales, TilePoint[] keys ) {
+		for ( TilePoint key : keys ) {
 			Integer val = normales.remove( key );
 
 			if ( val != null )
-				return new AbstractMap.SimpleImmutableEntry<Point, Integer>( key, val );
+				return new AbstractMap.SimpleImmutableEntry<TilePoint, Integer>( key, val );
 		}
 
 		return null;

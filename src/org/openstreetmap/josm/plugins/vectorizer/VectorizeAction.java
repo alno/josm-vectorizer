@@ -52,8 +52,7 @@ public class VectorizeAction extends JosmAction {
 
 	public VectorizeAction( String name ) {
 		super( name, "vectorizer-sml", tr( "Vectorize feature." ), shortcut, true );
-
-		setEnabled( true );
+		setEnabled( false );
 	}
 
 	public void actionPerformed( ActionEvent e ) {

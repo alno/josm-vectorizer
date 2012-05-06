@@ -64,7 +64,7 @@ public class AreaNormales extends HashMap<TilePoint, Direction> {
 
 			List<Node> newNodes = DouglasPeucker.simplify( nodes, d );
 
-			if ( newNodes.size() > 3 ) {
+			if ( newNodes.size() > 4 ) {
 				Way way = new Way();
 				way.setNodes( newNodes );
 				ways.add( way );

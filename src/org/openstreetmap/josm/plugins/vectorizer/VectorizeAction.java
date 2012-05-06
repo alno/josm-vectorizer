@@ -22,7 +22,7 @@ public class VectorizeAction extends JosmAction {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Shortcut shortcut = Shortcut.registerShortcut( "tools:vectorize", tr( "Tool: {0}", tr( "Vectorizer" ) ), KeyEvent.VK_V, Shortcut.CTRL_SHIFT );
+	private static final Shortcut shortcut = Shortcut.registerShortcut( "tools:vectorize", tr( "Tool: {0}", tr( "Vectorizer" ) ), KeyEvent.VK_V, Shortcut.SHIFT );
 
 	private final MouseListener mouseListener = new MouseAdapter() {
 
@@ -51,7 +51,7 @@ public class VectorizeAction extends JosmAction {
 	private Cursor oldCursor = null;
 
 	public VectorizeAction( String name ) {
-		super( name, "lakewalker-sml", tr( "Vectorize feature." ), shortcut, true );
+		super( name, "vectorizer-sml", tr( "Vectorize feature." ), shortcut, true );
 
 		setEnabled( true );
 	}

@@ -45,7 +45,7 @@ public class VectorizeTask extends PleaseWaitRunnable {
 	}
 
 	public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
-		return EllipsoidSelector.average( img, sx, sy, 3, 0 ).expand( 5 );
+		return EllipsoidSelector.average( img, sx, sy, 3, 0 ).expand( 3 );
 	}
 
 	public ImageAccess createImageAccess( BufferedImage img ) {

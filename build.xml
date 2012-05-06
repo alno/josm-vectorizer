@@ -96,7 +96,7 @@
                 <attribute name="Plugin-Class" value="org.openstreetmap.josm.plugins.vectorizer.VectorizerPlugin"/>
                 <attribute name="Plugin-Date" value="${version.entry.commit.date}"/>
                 <attribute name="Plugin-Description" value="Vectorize images"/>
-                <attribute name="Plugin-Icon" value="images/lakewalker-sml.png"/>
+                <attribute name="Plugin-Icon" value="images/vectorizer-sml.png"/>
                 <!--<attribute name="Plugin-Link" value="..."/>-->
                 <attribute name="Plugin-Mainversion" value="${plugin.main.version}"/>
                 <attribute name="Plugin-Version" value="${version.entry.commit.revision}"/>

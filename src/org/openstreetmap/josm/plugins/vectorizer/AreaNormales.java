@@ -9,8 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openstreetmap.josm.Main;
+import org.openstreetmap.josm.data.coor.LatLon;
 import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.projection.Projection;
 
 public class AreaNormales extends HashMap<TilePoint, Direction> {
 
@@ -44,7 +47,7 @@ public class AreaNormales extends HashMap<TilePoint, Direction> {
 		return popFirst( getNextCandidates( e ) );
 	}
 
-	public List<Way> buildWays() {
+	public List<Way> buildWays( double dx, double dy ) {
 		double d = 10;
 
 		List<Way> ways = new ArrayList<Way>();
@@ -56,7 +59,7 @@ public class AreaNormales extends HashMap<TilePoint, Direction> {
 			Map.Entry<TilePoint, Direction> e = popFirst();
 
 			while ( e != null ) {
-				nodes.add( new Node( area.getLatLon( e.getKey(), 2 ) ) );
+				nodes.add( buildNode( e.getKey(), dx, dy ) );
 				e = popNext( e );
 			}
 
@@ -72,6 +75,13 @@ public class AreaNormales extends HashMap<TilePoint, Direction> {
 		}
 
 		return ways;
+	}
+
+	private Node buildNode( TilePoint p, double dx, double dy ) {
+		Projection proj = Main.getProjection();
+		LatLon ll = proj.eastNorth2latlon( proj.latlon2eastNorth( area.getLatLon( p, 2 ) ).add( dx, dy ) );
+
+		return new Node( ll );
 	}
 
 	private TilePoint[] getNextCandidates( Map.Entry<TilePoint, Direction> e ) {

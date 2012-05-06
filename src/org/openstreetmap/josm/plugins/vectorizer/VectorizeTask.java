@@ -145,7 +145,7 @@ public class VectorizeTask extends PleaseWaitRunnable {
 		AreaNormales normales = area.buildNormales();
 
 		progressMonitor.subTask( tr( "Building ways" ) );
-		return normales.buildWays();
+		return normales.buildWays(layer.getDx(), layer.getDy());
 	}
 
 	private Area select( TMSLayer layer, LatLon ll ) {

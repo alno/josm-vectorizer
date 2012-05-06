@@ -1,6 +1,7 @@
 package org.openstreetmap.josm.plugins.vectorizer;
 
 import static org.openstreetmap.josm.tools.I18n.tr;
+import static org.openstreetmap.josm.plugins.vectorizer.Vectorizer.*;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -45,11 +46,14 @@ public class VectorizeTask extends PleaseWaitRunnable {
 	}
 
 	public ColorSelector createColorSelector( BufferedImage img, int sx, int sy ) {
-		return EllipsoidSelector.average( img, sx, sy, 3, 0 ).expand( 3 );
+		return EllipsoidSelector.average( img, sx, sy, PROP_COLOR_AREA_SIZE.get() ).expand( PROP_COLOR_ELLIPSOID_EXPAND.get() );
 	}
 
 	public ImageAccess createImageAccess( BufferedImage img ) {
-		return new MedianImageAccess( new DirectImageAccess( img ), 1 );
+		if ( PROP_IMAGE_FILTER_MEDIAN_SIZE.get() > 0 )
+			return new MedianImageAccess( new DirectImageAccess( img ), PROP_IMAGE_FILTER_MEDIAN_SIZE.get() );
+		else
+			return new DirectImageAccess( img );
 	}
 
 	@Override
@@ -145,7 +149,7 @@ public class VectorizeTask extends PleaseWaitRunnable {
 		AreaNormales normales = area.buildNormales();
 
 		progressMonitor.subTask( tr( "Building ways" ) );
-		return normales.buildWays(layer.getDx(), layer.getDy());
+		return normales.buildWays( layer.getDx(), layer.getDy() );
 	}
 
 	private Area select( TMSLayer layer, LatLon ll ) {

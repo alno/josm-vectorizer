@@ -20,7 +20,7 @@ public class VectorizerPlugin extends Plugin {
 
 	@Override
 	public void mapFrameInitialized( MapFrame oldFrame, MapFrame newFrame ) {
-		   vectorizeAction.setEnabled( newFrame != null );
+		vectorizeAction.setEnabled( newFrame != null );
 	}
 
 }

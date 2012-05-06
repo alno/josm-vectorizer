@@ -37,7 +37,7 @@ public class EllipsoidSelector implements ColorSelector {
 		return x * x;
 	}
 
-	public static EllipsoidSelector average( BufferedImage img, int sx, int sy, int r, int sd ) {
+	public static EllipsoidSelector average( BufferedImage img, int sx, int sy, int r) {
 		double cr = 0, cg = 0, cb = 0;
 		int count = 0;
 
